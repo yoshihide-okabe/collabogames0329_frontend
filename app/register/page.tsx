@@ -24,6 +24,12 @@ export default function RegisterPage() {
     router.push("/");
   };
 
+  const handleCancel = () => {
+    // 入力内容をクリア
+    setName("");
+    setSelectedCategories([]);
+  };
+
   const categories = [
     "システム部",
     "経理部",
@@ -41,14 +47,16 @@ export default function RegisterPage() {
     <div className="h-screen flex flex-col bg-gradient-to-b from-lightgreen-50 to-white">
       {/* ヘッダー */}
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-lightgreen-200 px-4 py-3 shadow-sm">
-        <h1 className="text-xl font-bold text-lightgreen-800">ユーザー登録</h1>
+        <h1 className="text-xl font-bold text-lightgreen-800">
+          ユーザー登録・変更
+        </h1>
       </header>
 
       {/* メイン */}
       <main className="flex flex-col items-center justify-start px-4 pt-10 flex-1">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-md border border-lightgreen-200 p-6">
           <h2 className="text-xl font-semibold text-lightgreen-800 mb-4 text-center">
-            登録フォーム
+            登録・変更フォーム
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -95,12 +103,22 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-lightgreen-500 hover:bg-lightgreen-600 text-white font-semibold rounded-full shadow-md"
-            >
-              登録
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                type="submit"
+                className="flex-1 bg-lightgreen-500 hover:bg-lightgreen-600 text-white font-semibold rounded-full shadow-md"
+              >
+                登録
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 border-lightgreen-300 text-lightgreen-700 hover:bg-lightgreen-100 rounded-full"
+                onClick={handleCancel}
+              >
+                キャンセル
+              </Button>
+            </div>
           </form>
         </div>
       </main>
