@@ -108,7 +108,7 @@ export default function RegisterPage() {
                 type="submit"
                 className="flex-1 bg-lightgreen-500 hover:bg-lightgreen-600 text-white font-semibold rounded-full shadow-md"
               >
-                登録
+                登録・変更
               </Button>
               <Button
                 type="button"
