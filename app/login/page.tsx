@@ -3,20 +3,38 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { login } from "@/services/auth";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-    if (username === "admin" && password === "password") {
-      localStorage.setItem("isLoggedIn", "true");
+    try {
+      // バックエンドAPIを使用した認証
+      await login({ username, password });
+
+      // ログイン成功後、ホームページにリダイレクト
       router.push("/");
-    } else {
-      alert("無効なユーザー名またはパスワード");
+    } catch (error: any) {
+      // エラーメッセージの表示
+      if (error.response?.status === 401) {
+        setError("無効なユーザー名またはパスワード");
+      } else {
+        setError(
+          "ログイン中にエラーが発生しました。後でもう一度お試しください。"
+        );
+      }
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -33,6 +51,11 @@ export default function LoginPage() {
           <h2 className="text-xl font-semibold text-lightgreen-800 mb-4 text-center">
             ログイン
           </h2>
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label
@@ -48,6 +71,7 @@ export default function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -64,13 +88,15 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
             <Button
               type="submit"
               className="w-full bg-lightgreen-500 hover:bg-lightgreen-600 text-white font-semibold rounded-full shadow-md"
+              disabled={isLoading}
             >
-              ログイン
+              {isLoading ? "ログイン中..." : "ログイン"}
             </Button>
           </form>
 
@@ -82,6 +108,7 @@ export default function LoginPage() {
               variant="outline"
               className="mt-2 border-lightgreen-300 text-lightgreen-700 hover:bg-lightgreen-100 w-full rounded-full"
               onClick={() => router.push("/register")}
+              disabled={isLoading}
             >
               新規登録
             </Button>
