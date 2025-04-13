@@ -15,11 +15,13 @@ export default function CreateProject() {
     title: "",
     summary: "",
     description: "",
+    category_id: null as number | null, // 追加: カテゴリーID用のステート
   });
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [userId, setUserId] = useState<number | null>(null);
+  const [isCategoriesLoading, setIsCategoriesLoading] = useState(true); // 追加: カテゴリー読み込み状態
 
   useEffect(() => {
     // ユーザーIDをローカルストレージから取得
@@ -37,19 +39,23 @@ export default function CreateProject() {
   }, [router]);
 
   const fetchCategories = async () => {
+    setIsCategoriesLoading(true); // 追加: ローディング開始
     try {
       const response = await fetch(
-        "http://localhost:8000/api/v1/projects/categories"
+        "http://localhost:8000/api/projects/categories"
       );
       if (response.ok) {
         const data = await response.json();
         setCategories(data);
+        setError(""); // 追加: エラー状態をクリア
       } else {
         setError("カテゴリーの取得に失敗しました");
       }
     } catch (error) {
       console.error("カテゴリー取得エラー:", error);
       setError("カテゴリーの取得中にエラーが発生しました");
+    } finally {
+      setIsCategoriesLoading(false); // 追加: ローディング終了
     }
   };
 
@@ -59,10 +65,21 @@ export default function CreateProject() {
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // 追加: カテゴリー選択の処理
+    if (name === "category_id") {
+      // 数値に変換（値が空の場合はnull）
+      const categoryId = value ? parseInt(value, 10) : null;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: categoryId,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -86,7 +103,7 @@ export default function CreateProject() {
         return;
       }
 
-      const response = await fetch("http://localhost:8000/api/v1/projects", {
+      const response = await fetch("http://localhost:8000/api/projects", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -97,6 +114,7 @@ export default function CreateProject() {
           summary: formData.summary,
           description: formData.description,
           creator_user_id: userId,
+          category_id: formData.category_id, // 追加: カテゴリーIDを送信
         }),
       });
 
@@ -172,6 +190,36 @@ export default function CreateProject() {
             placeholder="プロジェクトの概要を簡潔に記入してください"
             className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           />
+        </div>
+
+        {/* 追加: カテゴリー選択フィールド */}
+        <div className="space-y-2">
+          <label
+            htmlFor="category_id"
+            className="block font-medium text-gray-700"
+          >
+            カテゴリー
+          </label>
+          {isCategoriesLoading ? (
+            <p className="text-gray-500">カテゴリーを読み込み中...</p>
+          ) : categories.length > 0 ? (
+            <select
+              id="category_id"
+              name="category_id"
+              value={formData.category_id?.toString() || ""}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="">カテゴリーを選択してください</option>
+              {categories.map((category) => (
+                <option key={category.category_id} value={category.category_id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="text-gray-500">カテゴリーがありません</p>
+          )}
         </div>
 
         <div className="space-y-2">
